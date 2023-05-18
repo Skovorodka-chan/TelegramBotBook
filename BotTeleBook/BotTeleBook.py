@@ -1,7 +1,7 @@
 ﻿import telebot
 from telebot import types
 
-bot = telebot.TeleBot("6292680787:AAH3Oxib5LUO0cvMz9qJLZS_7IS1qOpAysg");
+bot = telebot.TeleBot("TOKEN");
 
 name = '';
 name_author = '';
