@@ -6,6 +6,7 @@ bot = telebot.TeleBot("TOKEN");
 name = '';
 name_author = '';
 name_book = '';
+rating = '';
 feedback = '';
 markup = '';
 
@@ -26,44 +27,55 @@ def get_name(message):
     bot.send_message(message.from_user.id, "Здравствуйте, " + name + "!", reply_markup=markup);
     bot.register_next_step_handler(message, get_book);
 
-def get_book(message):
-    if message.text == "Добавить книгу":        
-        keyboard = types.InlineKeyboardMarkup(); 
-        key_name_book = types.InlineKeyboardButton(text='Название', callback_data='name_book'); 
-        keyboard.add(key_name_book); 
-        key_name_author= types.InlineKeyboardButton(text='Автор', callback_data='name_author');
-        keyboard.add(key_name_author);
-        key_evaluation= types.InlineKeyboardButton(text='Оценка', callback_data='evaluation');
-        keyboard.add(key_evaluation);
-        key_plot= types.InlineKeyboardButton(text='Краткий сюжет', callback_data='plot');
-        keyboard.add(key_plot);
-        bot.send_message(message.from_user.id, text="Выбирите пункт:", reply_markup=keyboard);
-        bot.register_next_step_handler(message, get_name_book);
+def get_book(message):   
+    markup = types.ReplyKeyboardMarkup(row_width=2);
+    btn1 = types.KeyboardButton('Название');
+    btn2 = types.KeyboardButton('Автор');
+    btn3 = types.KeyboardButton('Оценка');
+    btn4 = types.KeyboardButton('Краткий сюжет/Впечатление');
+    btn5 = types.KeyboardButton('Завершить');
+    markup.add(btn1, btn2, btn3, btn4, btn5);
+    bot.send_message(message.from_user.id, text="Выбирите пункт:", reply_markup=markup);
+    bot.register_next_step_handler(message, book);
 
+
+def book(message):
+    if message.text == "Название":
+        bot.register_next_step_handler(message, get_name_book);
+    if message.text == "Автор":
+        bot.register_next_step_handler(message, get_name_author);
+    if message.text == "Оценка":
+        bot.register_next_step_handler(message, get_rating);
+    if message.text == "Краткий сюжет/Впечатление":
+        bot.register_next_step_handler(message, get_feedback);
+    if message.text == "Завершить":
+        bot.send_message(message.from_user.id, "Название: " + name_book + '\n' + 
+                                               "Автор: " + name_author + '\n' + 
+                                               "Оценка: " + rating + '\n' + 
+                                               "Впечатление: " + feedback + '\n', reply_markup=markup);
+        bot.register_next_step_handler(message, get_name);
 
 def get_name_book(message):
-    if message.text == "Название книги":
-        global name_book;
-        name_book = message.text;
+    global name_book;
+    name_book = message.text;
+    bot.register_next_step_handler(message, book);
+
+def get_name_author(message):
+    global name_author;
+    name_author = message.text;
+    bot.register_next_step_handler(message, book);
+
+def get_rating(message):
+    global rating;
+    rating = message.text;
+    bot.register_next_step_handler(message, book);
+
+def get_feedback(message):
+    global feedback;
+    feedback = message.text;
+    bot.register_next_step_handler(message, book);
 
 
-def finish(message):
-    keyboard = types.InlineKeyboardMarkup(); #наша клавиатура
-    key_yes = types.InlineKeyboardButton(text='Да', callback_data='yes'); #кнопка «Да»
-    keyboard.add(key_yes); #добавляем кнопку в клавиатуру
-    key_no= types.InlineKeyboardButton(text='Нет', callback_data='no');
-    keyboard.add(key_no);
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_worker(call):
-    if call.data == "name_book":
-        global name_book;
-        name_book = message.text;
-    if call.data == "yes": #call.data это callback_data, которую мы указали при объявлении кнопки
-        
-        bot.send_message(call.message.chat.id, 'Запомню : )');
-    elif call.data == "no":
-        pass
 
 
 bot.polling(none_stop=True)
